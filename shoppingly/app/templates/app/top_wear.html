@@ -1,0 +1,36 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %} Top Wears {% endblock title %}
+{% block main-content %}
+<div class="container my-5">
+ <div class="row">
+  <div class="col-sm-3">
+   <div class="list-group">
+    <a href="{% url 'top_wear' %}" class="list-group-item list-group-item-action" aria-current="true">All Top Wears</a>
+    <a href="{% url 'top_wear_data' 'jbfashion' %}" class="list-group-item list-group-item-action" aria-current="true">JB Fashion </a>
+    <a href="{% url 'top_wear_data' 'vcom' %}" class="list-group-item list-group-item-action" aria-current="true">Vcom</a>
+    <a href="{% url 'top_wear_data' 'wardrobe' %}" class="list-group-item list-group-item-action" aria-current="true">Wardrobe </a>
+    <a href="{% url 'top_wear_data' 'ethnic' %}" class="list-group-item list-group-item-action" aria-current="true">Ethnic</a>
+    <a href="{% url 'top_wear_data' 'readymade' %}" class="list-group-item list-group-item-action" aria-current="true">Readymade</a>
+    <a href="{% url 'top_wear_data' 'warm' %}" class="list-group-item list-group-item-action" aria-current="true">Warm</a>
+   </div>
+  </div>
+  <div class="col-sm-8">
+   <div class="row">
+    {% for product in top_wears %}
+    <div class="col-sm-4 tet-center mb-4">
+     <a href="{% url 'product-detail' product.id %}" class="btn">
+      <div class="item">
+       <img src="{{product.product_image.url}}" alt="" height="300" class="" style="width: 260px; height: 302px;">
+       <div class="fw-bold">{{product.tittle}}</div>
+       <div class="fw-bold">Rs. {{product.discount_price}}
+        <small class="fw-light text-decoration-line-through">{{product.selling_price}}</small></div>
+      </div>
+     </a>
+    </div>
+       {% endfor %}
+   </div>
+  </div>
+ </div>
+</div>
+{% endblock main-content %}
