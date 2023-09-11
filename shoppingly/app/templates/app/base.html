@@ -52,8 +52,8 @@
              </ul>
            </li>
          </ul>
-         <form class="d-flex">
-           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+         <form method="get" class="d-flex" action="/search/">
+           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="tittle" id="tittle">
            <button class="btn btn-warning" type="submit">Search</button>
          </form>
          <div>
@@ -72,6 +72,9 @@
             </li>
             <li class="nav-item mx-2">
              <a href="{% url 'showcart' %}" class="nav-link text-white"> Cart </a>
+            </li>
+            <li class="nav-item mx-2">
+             <a href="{% url 'wishlist' %}" class="nav-link text-white"> Wishlist </a>
             </li>
               {% else %}
             <li class="nav-item mx-2">

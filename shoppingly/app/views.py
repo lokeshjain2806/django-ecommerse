@@ -1,6 +1,6 @@
 from django.db.models import Q
-from django.http import JsonResponse
-from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseNotFound
+from django.shortcuts import render, redirect, HttpResponse
 from django.views import View
 from .models import *
 from .forms import CustumerRegistrationForm, CustumerProfileForm
@@ -21,16 +21,57 @@ class ProductView(View):
             'topwears': topwears,
             'bottomwears': bottomwears
         }
-        return render(request, 'app/home.html',context)
+        return render(request, 'app/home.html', context)
+
+
+def search(request):
+    query = request.GET.get('tittle')
+    data = Product.objects.filter(tittle__icontains=query)
+    return render(request, 'app/search.html', {'data': data, 'query': query})
+
+
+@login_required(login_url="/account/login/")
+def add_to_wishlist(request):
+    user = request.user
+    product_id = request.GET.get('prod_id')
+    product = Product.objects.get(id=product_id)
+    if product:
+        WishList(user=user, product=product).save()
+        return redirect('wishlist')
+    else:
+        return redirect('home')
+
+
+@login_required(login_url="/account/login/")
+def show_wishlist(request):
+    if request.user.is_authenticated:
+        user = request.user
+        wishlist = WishList.objects.filter(user=user)
+        wishlist_product = [p for p in WishList.objects.all() if p.user == user]
+        if wishlist_product:
+            return render(request, 'app/wishlist.html', {'wishlist_product': wishlist_product, 'wishlist': wishlist})
+        else:
+            return render(request, 'app/emptywishlist.html')
+
+
+def remove_wishlist(request):
+    if request.method == 'GET':
+        user = request.user
+        prod_id = request.GET['prod_id']
+        c = WishList.objects.filter(product=prod_id, user=user).first()
+        c.delete()
+        return render(request, 'app/wishlist.html')
 
 
 class ProductDetailView(View):
     def get(self, request, pk):
         product = Product.objects.get(pk=pk)
         item_already_in_cart = False
+        item_already_in_wishlist = False
         if request.user.is_authenticated:
             item_already_in_cart = Cart.objects.filter(Q(product=product.id) & Q(user=request.user)).exists()
-        return render(request, 'app/productdetail.html', {'product':product, 'item_already_in_cart': item_already_in_cart})
+            item_already_in_wishlist = WishList.objects.filter(Q(product=product.id) & Q(user=request.user)).exists()
+        return render(request, 'app/productdetail.html', {'product': product, 'item_already_in_cart': item_already_in_cart, 'item_already_in_wishlist': item_already_in_wishlist})
 
 
 @login_required(login_url="/account/login/")
@@ -46,7 +87,7 @@ def add_to_cart(request):
 def show_cart(request):
     if request.user.is_authenticated:
         user = request.user
-        cart = Cart.objects.filter(user = request.user)
+        cart = Cart.objects.filter(user=request.user)
         amount = 0.0
         shipping_amount = 0.0
         total_amount = 0.0
@@ -254,6 +295,7 @@ class CustumerRegistrationView(View):
             form.save()
         return render(request, 'app/customerregistration.html', {'form': form})
 
+
 @login_required(login_url="/account/login/")
 def checkout(request):
     user = request.user
@@ -275,6 +317,10 @@ def checkout(request):
 def paymentdone(request):
     user = request.user
     custid = request.GET.get('custid')
+    try:
+        custumer = Custumer.objects.get(id=custid)
+    except Custumer.DoesNotExist:
+        return redirect("checkout")
     custumer = Custumer.objects.get(id=custid)
     cart = Cart.objects.filter(user=user)
     for c in cart:

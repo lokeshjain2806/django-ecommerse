@@ -88,6 +88,14 @@ class Cart(models.Model):
         return self.quantity * self.product.discount_price
 
 
+class WishList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.id)
+
+
 STATUS_CHOICES = (
     ('Accepted', 'Accepted'),
     ('Packed', 'Packed'),
